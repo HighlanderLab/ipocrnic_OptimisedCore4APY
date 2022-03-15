@@ -1,1 +1,2 @@
-# ipocrnic_OptimisedCore4APY
+# Optimal core definitions for the APY model
+## 
