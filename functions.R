@@ -1,5 +1,5 @@
-# Functions for "Optimal core definitions for the APY model"
-# Pocrnic, Lindgren, Tolhust, Herring, Gorjanc (2022) 
+# Functions for "Optimisation of the core subset for the APY approximation of genomic relationships"
+# Pocrnic, Lindgren, Tolhust, Herring & Gorjanc (2022) 
 # DOI: 
 
 #### Functions ####
