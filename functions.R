@@ -4,46 +4,46 @@
 
 #### Functions ####
 
-# A: AA' is the covariance
+# Winit: WinitWinit' is the covariance
 # knots: already selected knots
-# B: BB' is the conditional covariance given already selected knots
+# W: WW' is the conditional covariance given already selected knots
 # p: The number of new knots to choose
 # method:
 #   prior: Maximises prior variance for the knot in each step
 #   posterior_max: Minimises the maximum posterior variance in each step
 #   posterior_avg: Minimises the average posterior variance in each step
 #     (to avoid issues when the maximum isn't improved)
-find_knots <- function(A,
+find_knots <- function(Winit,
                        knots = NULL,
-                       B = NULL,
+                       W = NULL,
                        p,
                        method = c("prior", "posterior_max", "posterior_avg")) {
   method <- match.arg(method)
   if (is.null(knots)) {
     knots <- c()
-    B <- A
+    W <- Winit
   }
-  if (is.null(B)) {
-    B <- A
+  if (is.null(W)) {
+    W <- Winit
     for (i in knots) {
-      b <- B[i, , drop = FALSE]
-      B <- B - (B %*% t(b)) %*% (b / sum(b^2))
+      w <- W[i, , drop = FALSE]
+      W <- W - (W %*% t(w)) %*% (w / sum(w^2))
     }
   }
   target <- c()
   total_var <- c()
   for (k in seq_len(p)) {
-    v_prior <- rowSums(B^2)
+    v_prior <- rowSums(W^2)
     if (method == "prior") {
       i <- which.max(v_prior)
       target <- c(target, v_prior[i])
     } else if (method == "posterior_max") {
       ok <- v_prior > 0
-      v_post <- rep(Inf, nrow(A))
+      v_post <- rep(Inf, nrow(Winit))
       v_post[ok] <-
         vapply(which(ok), function(i) {
-          b <- B[i, , drop = FALSE]
-          max(rowSums((B - (B %*% t(b)) %*% (b / sum(b^2)))^2))
+          w <- W[i, , drop = FALSE]
+          max(rowSums((W - (W %*% t(w)) %*% (w / sum(w^2)))^2))
         }, 1.0)
       # Make sure we don't pick an existing knot by accident
       v_post[knots] <- Inf
@@ -51,11 +51,11 @@ find_knots <- function(A,
       target <- c(target, v_post[i])
     } else if (method == "posterior_avg") {
       ok <- v_prior > 0
-      v_post <- rep(Inf, nrow(A))
+      v_post <- rep(Inf, nrow(Winit))
       v_post[ok] <-
         vapply(which(ok), function(i) {
-          b <- B[i, , drop = FALSE]
-          mean(rowSums((B - (B %*% t(b)) %*% (b / sum(b^2)))^2))
+          w <- W[i, , drop = FALSE]
+          mean(rowSums((W - (W %*% t(w)) %*% (w / sum(w^2)))^2))
         }, 1.0)
       # Make sure we don't pick an existing knot by accident
       v_post[knots] <- Inf
@@ -63,44 +63,43 @@ find_knots <- function(A,
       target <- c(target, v_post[i])
     }
     knots <- c(knots, i)
-    b <- B[i, , drop = FALSE]
-    B <- B - (B %*% t(b)) %*% (b / sum(b^2))
-    # B <- B - (tcrossprod(B, b)) %*% (b / sum(b^2))
-    total_var <- c(total_var, sum(B^2)) # sum of the remaining variances
+    w <- W[i, , drop = FALSE]
+    W <- W - (W %*% t(w)) %*% (w / sum(w^2))
+    total_var <- c(total_var, sum(W^2)) # sum of the remaining variances
   }
   list(data = data.frame(k = seq_len(p),
                          knots = knots,
                          total_var = total_var,
                          target = target,
                          method = method),
-       B = B)
+       W = W)
 }
 
-# Aold: Aold'Aold is the covariance between existing points
-# knots: Existing knots in Aold
-# Anew: Rows to be added to an existing A-matrix
-# Returns Bnew, the rows of the expanded B-matrix such that with
-#   B = rbind(Bold, Bnew), the matrix BB' is the covariance
+# Winit: WinitWinit' is the covariance between existing points
+# knots: Existing knots in Winit
+# Wadd: Rows to be added to an existing Winit
+# Returns Wnew, the rows of the expanded W-matrix such that with
+#   W = rbind(Wold, Wnew), the matrix WW' is the covariance
 #   conditionally on the knots.
 #
 # Example:
-#   # Find 5 knots in A1:
-#   info1 <- find_knots(A = A1, p = 5)
-#   # Find another 5 knots in rbind(A1, A2):
+#   # Find 5 knots in W1:
+#   info1 <- find_knots(Winit = W1, p = 5)
+#   # Find another 5 knots in rbind(W1, W2):
 #   info2 <- find_knots(
-#     A = rbind(A1, A2), # This A won't actually be used
+#     Winit = rbind(W1, W2), # This Winit won't actually be used
 #     knots = info$data$knots,
-#     B = rbind(info$B,
-#               expand_B(A1, info$data$knots, A2)),
+#     W = rbind(info$W,
+#               expand_W(W1, info$data$knots, W2)),
 #     p = 5)
-expand_B <- function(Aold, knots, Anew) {
-  B <- rbind(Aold[knots, , drop = FALSE], Anew)
+expand_W <- function(Winit, knots, Wadd) {
+  W <- rbind(Winit[knots, , drop = FALSE], Wadd)
   for (i in 1:length(knots)) {
-    b <- B[i, , drop = FALSE]
-    B <- B - (B %*% t(b)) %*% (b / sum(b^2))
+    w <- W[i, , drop = FALSE]
+    W <- W - (W %*% t(w)) %*% (w / sum(w^2))
   }
-  Bnew <- B[length(knots) + seq_len(nrow(Anew)), , drop = FALSE]
-  Bnew
+  Wnew <- W[length(knots) + seq_len(nrow(Wadd)), , drop = FALSE]
+  Wnew
 }
 
 
