@@ -1,6 +1,8 @@
 # "Optimisation of the core subset for the APY approximation of genomic relationships"
 ## Pocrnic, Lindgren, Tolhurst, Herring & Gorjanc (2022)
 
+Preprint avaliable at bioRxiv: [Optimisation of the core subset for the APY approximation of genomic relationships](https://biorxiv.org/lookup/doi/10.1101/2022.06.06.494931)
+
 - `functions.R` includes (1) `find_knots` function to run conditional sampling core selection algorithms presented in the manuscript; (2) `expand_B` extension function; (3) `APY_inverse` brute force APY function (in the case you use free version of `BLUPF90` that doesn't have `OPTION apy ...` available); (4) `data_rec` function to collect data from `AlphaSimR` simulation; (5) `run_gblupf90` function to run BLUPF90 and read solutions into `R`; and (6) `prepare_par` function to prepare parameter file for `BLUPF90`. 
 
 - You might need to change the following line of code in `functions.R` based on your OS and location of the `BLUPF90` binary;
