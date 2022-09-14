@@ -4,6 +4,9 @@
 
 #### Functions ####
 
+# Note: Compared to the journal article, the standard conditional algorithm in the code is named as "prior", 
+#       while the two computationally more expensive extensions are named "posterior_max" and "posterior_avg".
+
 # Winit: WinitWinit' is the covariance
 # knots: already selected knots
 # W: WW' is the conditional covariance given already selected knots
