@@ -1,4 +1,4 @@
-# "Optimisation of the core subset for the APY approximation of genomic relationships"
+# Optimisation of the core subset for the APY approximation of genomic relationships
 ## Pocrnic, Lindgren, Tolhurst, Herring & Gorjanc (2022)
 
 Published in GSE: [Optimisation of the core subset for the APY approximation of genomic relationships](https://doi.org/10.1186/s12711-022-00767-x)
